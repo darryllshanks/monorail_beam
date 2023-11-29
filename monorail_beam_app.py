@@ -77,6 +77,7 @@ with tab0:
     st.write("- The assessment of connections at the monorail support points")
     st.write("- Fatigue design")
     st.write("- Addition of flange plates to the bottom flange to improve local flange bending")
+    st.write("- Out-of-plane stiffness for 4% min. lateral load is not calculated")
 
     st.markdown("#### Current 'Work in Progress' Items")
     st.write("- Ability to add bottom flange strengthening plates.")
@@ -339,8 +340,9 @@ with tab3:
     st.markdown("""<hr style="height:10px;border:none;color:#333;background-color:#333;" /> """, unsafe_allow_html=True)
 
     st.markdown("#### Local Checks")
+    M_max_dyn = st.number_input("Maximum Dynamically Factored Bending Moment at Location of Wheel Load (kNm)", value=0.0, min_value=0.0)
     n_wheel = wheel_load_dist * sb_data.Q_load_dls * 1e-2
-    bending_stress = max(M_max_cont, M_max_cant) * 1e6 / sb_data.Z_x
+    bending_stress = M_max_dyn * 1e6 / sb_data.Z_x
     load_pos_fact_list = ['1.0', '1.3']
     K_L = st.selectbox("Load Position Factor, $K_L$", load_pos_fact_list, placeholder='1.3')
     min_flg_thk, min_web_thk = mba_mod.calc_min_element_thickness(
@@ -357,17 +359,20 @@ with tab3:
     col_3_10, col_3_11, col_3_12 = st.columns([3,1,3])
     with col_3_10:
         st.write(f"Maximum Dynamic Wheel Load, N_w =")
+        st.write(f"Dynamically Factored Bending Stress, f_b =")
         st.write(f"Min Flange Thickness Required, tf.min =")
         st.write(f"Monorail Beam Flange Thickness, tf =")
         st.write(f"Min Web Thickness Required, tw.min =")
         st.write(f"Monorail Beam Web Thickness, tw =")
     with col_3_11:
         st.write(f"{utils.round_up(n_wheel, 2)} kN")
+        st.write(f"{utils.round_up(bending_stress, 2)} MPa")
         st.write(f"{utils.round_up(min_flg_thk, 1)} mm")
         st.write(f"{utils.round_up(sb_data.t_f, 1)} mm")
         st.write(f"{utils.round_up(min_web_thk, 1)} mm")
         st.write(f"{utils.round_up(sb_data.t_w, 1)} mm")
     with col_3_12:
+        st.write(".")
         st.write(".")
         st.write(".")
         if min_flg_thk > sb_data.t_f:
