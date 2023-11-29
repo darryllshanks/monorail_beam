@@ -1,23 +1,31 @@
 import math
 import pycba as cba
 import numpy as np
+from eng_calcs import utils
 
 
-def find_load_pos_for_PyCBA(load_pos: float, spans: list):
+def find_load_pos_for_PyCBA(load_pos: float, spans: list) -> int:
     """
     Returns the span index of a load position that is provided with
     respect to the total continuous beam length.
     """
+    list_len = len(spans)
+    rnd_load_pos = utils.round_down(load_pos, 4)
     for idx, seg in enumerate(spans):
         if idx == 0:
-            if (seg - load_pos) >= 0:
+            if (seg - rnd_load_pos) >= 0:
                 span_idx = 1
                 break
             else:
                 cum_sum = seg
+                continue
+        elif idx == (list_len - 1):
+            span_idx = list_len
+            break
         else:
-            if (seg + cum_sum - load_pos) >= 0:
+            if (seg + cum_sum - rnd_load_pos) >= 0:
                 span_idx = 1 + idx
+                print(f"idx {idx}")
                 break
             else:
                 cum_sum = seg + cum_sum
@@ -25,7 +33,8 @@ def find_load_pos_for_PyCBA(load_pos: float, spans: list):
 
 def static_beam_model(beam_model_data: dict, G_load: float, Q_load: float, Q_load_pos: float, n_points: int=1000) -> list:
     """
-    
+    Returns a dictionary of matrixes and critical values from a static
+    analysis of a continuous beam element solved in PyCBA.
     """
     # Creates BeamAnalysis model
     L = beam_model_data['L']
@@ -34,8 +43,7 @@ def static_beam_model(beam_model_data: dict, G_load: float, Q_load: float, Q_loa
 
     # Determines the load position index to be compatible with PyCBA
     span_idx = find_load_pos_for_PyCBA(Q_load_pos, L)
-    a_dist = Q_load_pos - sum(L[:span_idx - 1])
-    print(a_dist)
+    a_dist = Q_load_pos - sum(L[:(span_idx - 1)])
 
     # Applies loads and runs the analysis
     LM_G = G_load
@@ -75,7 +83,8 @@ def static_beam_model(beam_model_data: dict, G_load: float, Q_load: float, Q_loa
 
 def env_beam_model(beam_model_data: dict, G_load: float, Q_load: float, n_points: int=1000) -> list:
     """
-    
+    Returns a dictionary of matrixes and critical values from an enveloped
+    moving load analysis for a continuous beam element solved in PyCBA.
     """
     # Creates BeamAnalysis model
     L = beam_model_data['L']
@@ -85,11 +94,17 @@ def env_beam_model(beam_model_data: dict, G_load: float, Q_load: float, n_points
     beam_model = cba.BeamAnalysis(L, EI, R, LM_G)
     beam_model.analyze(n_points)
 
+    # Adjusts the load incrementing if the cantilever length is less than 100mm
+    if L[-1] <= 0.1:
+        inc = 0.01
+    else:
+        inc = 0.05
+
     load_spacing = [] # Empty list for hoist loads
     axle_loads = [Q_load]
     moving_hoist_load = cba.Vehicle(axle_spacings=load_spacing, axle_weights=axle_loads)
     bridge_model = cba.BridgeAnalysis(beam_model, moving_hoist_load)
-    results_env = bridge_model.run_vehicle(0.1, plot_env=False, plot_all=False)
+    results_env = bridge_model.run_vehicle(inc, plot_env=False, plot_all=False)
 
     # Generates the results output dictionary
     results_output = {}

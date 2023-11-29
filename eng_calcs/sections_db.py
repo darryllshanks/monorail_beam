@@ -4,12 +4,17 @@ from pathlib import Path
 from eng_calcs.beam_design import SteelBeam
 from eng_calcs.utils import str_to_float
 
+import sys
+
 MODULE_PATH = Path(__file__)
 # print(f"{MODULE_PATH=}")
 CWD = Path.cwd()
 # print(f"{CWD=}")
 DB_PATH = MODULE_PATH.parent
 # print(f"{DB_PATH=}")
+
+# Add the parent directory to sys.path
+sys.path.append(DB_PATH)
 
 
 def import_sections_db() -> pd.DataFrame:

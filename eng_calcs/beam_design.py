@@ -2,8 +2,17 @@ import pandas as pd
 from dataclasses import dataclass
 from math import pi, sqrt
 from pathlib import Path
-from eng_calcs import material_prop
+from eng_calcs.material_prop import plate_yield_stress, plate_tensile_stength
+from eng_calcs.utils import str_to_float
 
+import sys
+
+MODULE_PATH = Path(__file__)
+CWD = Path.cwd()
+DB_PATH = MODULE_PATH.parent
+
+# Add the parent directory to sys.path
+sys.path.append(DB_PATH)
 
 
 @dataclass
@@ -63,7 +72,7 @@ class SteelBeam(Beam):
         Table 2.1 with respect to the steel grade, plate thickness, and 
         residual stress category.
         """
-        f_yf = material_prop.plate_yield_stress(
+        f_yf = plate_yield_stress(
             self.steel_grade, 
             self.t_f,
             self.resi_stress_cat
@@ -76,7 +85,7 @@ class SteelBeam(Beam):
         Table 2.1 with respect to the steel grade, plate thickness, and 
         residual stress category.
         """
-        f_yw = material_prop.plate_yield_stress(
+        f_yw = plate_yield_stress(
             self.steel_grade, 
             self.t_w,
             self.resi_stress_cat
@@ -89,7 +98,7 @@ class SteelBeam(Beam):
         AS 4100:2020(+A1) Table 2.1 with respect to the steel grade and 
         residual stress category.
         """
-        f_u = material_prop.plate_tensile_stength(
+        f_u = plate_tensile_stength(
             self.steel_grade, 
             self.resi_stress_cat
         )
@@ -117,7 +126,7 @@ class SteelBeam(Beam):
         print(f"f_y = {f_y}")
         Z_ex = eff_section_modulus(self.S_x, self.Z_x, lamb_s, lamb_sy, lamb_sp)
         print(f"Z_ex = {Z_ex}")
-        M_sx = section_moment_cap(Z_ex, f_y, self.phi)
+        M_sx = section_moment_cap(Z_e=Z_ex, f_y=f_y)
         return M_sx
     
     def section_moment_capacity_y(self):
@@ -145,7 +154,7 @@ class SteelBeam(Beam):
         f_y = min(self.yield_stress_flg(), self.yield_stress_web())
         Z_ey = eff_section_modulus(self.S_y, self.Z_y, lamb_s, lamb_sy, lamb_sp)
         print(f"Z_ey = {Z_ey}")
-        M_sy = section_moment_cap(Z_ey, f_y, self.phi)
+        M_sy = section_moment_cap(Z_e=Z_ey, f_y=f_y)
         return M_sy
 
 
@@ -358,5 +367,40 @@ def member_moment_cap(M_sx: float, l_e: float, I_y: float, I_w: float, J: float,
     """
     M_o = sqrt(((pi ** 2 * E * I_y) / l_e ** 2) * (G * J + ((pi ** 2 * E * I_w) / l_e ** 2)))
     alpha_s = 0.6 * (sqrt((M_sx / M_o) ** 2 + 3) - M_sx / M_o)
-    M_bx = alpha_m * alpha_s * M_sx
+    M_bx = phi * alpha_m * alpha_s * M_sx
     return M_bx
+
+
+def create_steelbeam(
+        beam_prop: pd.Series,
+        steel_grade: str,
+        beam_tag: str
+) -> SteelBeam:
+    """
+    Returns a Steel_I_Beam dataclass, populated with the data stored in
+    a Pandas series 'beam_prop'.
+    """
+    pd.to_numeric(beam_prop, 'ignore')
+    sb = SteelBeam(
+        A=str_to_float(beam_prop['A']),
+        I_x=str_to_float(beam_prop['Ix']),
+        I_y=str_to_float(beam_prop['Iy']),
+        Z_x=str_to_float(beam_prop['Zx']),
+        Z_y=str_to_float(beam_prop['Zy']),
+        S_x=str_to_float(beam_prop['Sx']),
+        S_y=str_to_float(beam_prop['Sy']),
+        r_x=str_to_float(beam_prop['rx']),
+        r_y=str_to_float(beam_prop['ry']),
+        J=str_to_float(beam_prop['J']),
+        I_w=str_to_float(beam_prop['Iw']),
+        beam_tag=beam_tag,
+        d=str_to_float(beam_prop['d']),
+        b_f=str_to_float(beam_prop['bf']),
+        t_f=str_to_float(beam_prop['tf']),
+        t_w=str_to_float(beam_prop['tw']),
+        r_1=str_to_float(beam_prop['r1']),
+        mass=str_to_float(beam_prop['Mass']),
+        steel_grade=steel_grade,
+        resi_stress_cat=beam_prop['Class']
+    )
+    return sb

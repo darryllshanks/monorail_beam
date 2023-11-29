@@ -38,3 +38,19 @@ def read_csv_file(filename: str) -> list[list[str]]:
         csv_reader = csv.reader(csv_file)
         csv_data = list(csv_reader)
     return csv_data
+
+
+def round_down(n, decimals=0) -> float:
+    """
+    Returns a number rounded down to the specified number of decimal places.
+    """
+    multiplier = 10 ** decimals
+    return math.floor(n * multiplier) / multiplier
+
+
+def round_up(n, decimals=0) -> float:
+    """
+    Returns a number rounded up to the specified number of decimal places.
+    """
+    multiplier = 10 ** decimals 
+    return math.ceil(n * multiplier) / multiplier
