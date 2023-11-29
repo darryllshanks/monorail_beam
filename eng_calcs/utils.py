@@ -2,7 +2,7 @@ import math
 import csv
 
 
-def str_to_int(s: str) -> int|float:
+def str_to_int(s: str):
     """
     Returns an integer from a numeric string, however; returns the
     original string if the data is not numeric.
@@ -15,7 +15,7 @@ def str_to_int(s: str) -> int|float:
         return s
 
 
-def str_to_float(s: str) -> float|str:
+def str_to_float(s: str):
     """
     Returns a float from a numeric string, however; returns the 
     original string if the data is not numeric.
