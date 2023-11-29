@@ -22,17 +22,18 @@ def section_list(beam_type: str):
 def calc_min_element_thickness(
         N_W: float,
         f_y: float,
+        C_F: float,
+        B_F: float,
         D: float,
         f_b:float=0.0,
         K_L: float=1.3,
-        C_F: float=1.0,
-        B_F: float=1.0,
         n_cycles: float=1000
 ) -> float:
     """
-    
+    Returns the minimum web and flange thicknesses as determined
+    from DR AS 1418:2023.
     """
-    T_F = monorail_design.min_flg_thickness(N_W, f_y, f_b, K_L, C_F, B_F, n_cycles)
+    T_F = monorail_design.min_flg_thickness(N_W, f_y, C_F, B_F, f_b, K_L, n_cycles)
     T_W = monorail_design.min_web_thickness(N_W, f_y, D, C_F, B_F)
     return T_F, T_W
 

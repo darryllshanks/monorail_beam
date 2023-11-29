@@ -99,10 +99,10 @@ def factored_load(loads: dict, load_combos: dict) -> dict:
 def min_flg_thickness(
         N_W: float,
         f_y: float,
+        C_F: float,
+        B_F: float,
         f_b:float=0.0,
         K_L: float=1.3,
-        C_F: float=1.0,
-        B_F: float=1.0,
         n_cycles: float=1000
 ) -> float:
     """

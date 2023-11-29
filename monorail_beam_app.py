@@ -71,7 +71,7 @@ with tab0:
     st.write("- Only Australian steel sizes and grades are currently available")
     st.write("- Conservatively, alpha_m has been set as 1.0. Future revisions may allow the user " +
              "to provide this manually for each span.")
-    st.write("- The factor K_L is currently set at 1.3")
+    st.write("- The factor K_L needs to be set manually to suit the location of input moment")
 
     st.markdown("#### Exclusions")
     st.write("- The assessment of connections at the monorail support points")
@@ -341,13 +341,14 @@ with tab3:
     st.markdown("#### Local Checks")
     n_wheel = wheel_load_dist * sb_data.Q_load_dls * 1e-2
     bending_stress = max(M_max_cont, M_max_cant) * 1e6 / sb_data.Z_x
-
+    load_pos_fact_list = ['1.0', '1.3']
+    K_L = st.selectbox("Load Position Factor, $K_L$", load_pos_fact_list, placeholder='1.3')
     min_flg_thk, min_web_thk = mba_mod.calc_min_element_thickness(
         N_W=n_wheel,
         f_y=min(sb_data.yield_stress_flg(), sb_data.yield_stress_web()),
         D=sb_data.d,
         f_b=bending_stress,
-        K_L=1.3,
+        K_L=utils.str_to_float(K_L),
         C_F=cf_bf * sb_data.b_f * 0.5,
         B_F=sb_data.b_f * 0.5,
         n_cycles=n_cycles
