@@ -181,8 +181,6 @@ with tab2:
     # R2_max_val = utils.round_up(env_results['ULS']['Critical Values']['Rmax1']['val'], 2)
     # R3_max_val = utils.round_up(env_results['ULS']['Critical Values']['Rmax2']['val'], 2)
 
-    # st.write(env_results['ULS']['Critical Values'])
-
     tab2_expander_1 = st.expander(label="Bending Moment Diagram",expanded=True)
     with tab2_expander_1 :
         # Generates moment envelope diagram with overlay of static load case
@@ -248,8 +246,6 @@ with tab2:
         y_val_D = static_results['SLS']['Matrixes']['Deflections'] * 1000
         fig_defl = go.Figure()
         fig_defl.add_trace(go.Scatter(x=x_val_D, y=y_val_D, line={'color': 'rgb(255,0,0)', 'width': 3}))
-        # fig_defl.add_trace(go.Scatter(x=[0, (beam_span_1+beam_span_2) * 1e-3], y=[beam_cont_defl_lim_lower, beam_cont_defl_lim_lower], line={'color': 'rgb(255,0,0)', 'width': 3}))
-        # fig_defl.add_trace(go.Scatter(x=[(beam_span_1+beam_span_2) * 1e-3, (beam_span_1+beam_span_2+cant_span_R) * 1e-3], y=[beam_cant_defl_lim_lower, beam_cant_defl_lim_lower], line={'color': 'rgb(255,0,0)', 'width': 3}))
         fig_defl.layout.width = 650
         fig_defl.layout.width = 650
         fig_defl.layout.height = 400
@@ -432,8 +428,6 @@ with tab3:
                 st.write(f":red[NOT OK: Deflection exceeds limit of SPAN / 300.]")
             else:
                 st.write(f":green[OK: Deflections are below acceptable limits.]")
-
-
 
 # Checks for input and structured_data dictionaries
 # st.write(inputs)
