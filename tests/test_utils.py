@@ -1,5 +1,5 @@
 import math
-from eng_calcs import utils
+from .context import utils
 
 
 def test_str_to_int():

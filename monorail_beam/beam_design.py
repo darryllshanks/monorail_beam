@@ -2,8 +2,8 @@ import pandas as pd
 from dataclasses import dataclass
 from math import pi, sqrt
 from pathlib import Path
-from eng_calcs.material_prop import plate_yield_stress, plate_tensile_stength
-from eng_calcs.utils import str_to_float
+from monorail_beam.material_prop import plate_yield_stress, plate_tensile_stength
+from monorail_beam.utils import str_to_float
 
 import sys
 

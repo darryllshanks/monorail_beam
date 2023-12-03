@@ -2,10 +2,8 @@ import pandas as pd
 import math
 from pathlib import Path
 from handcalcs.decorator import handcalc
-from eng_calcs import beam_design, monorail_design, sections_db, beam_analysis
+from monorail_beam import beam_design, monorail_design, sections_db, beam_analysis
 
-
-# calc_renderer = handcalc()
 
 def section_list(beam_type: str):
     """

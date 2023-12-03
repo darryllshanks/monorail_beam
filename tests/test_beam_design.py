@@ -1,6 +1,8 @@
 import math
 import pytest
-from eng_calcs import beam_design
+# from monorail_beam import beam_design
+from .context import beam_design
+
 
 def test_element_slenderness():
     b_1 = 300.0

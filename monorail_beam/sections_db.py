@@ -1,10 +1,9 @@
 import pandas as pd
 import math
 from pathlib import Path
-from eng_calcs.beam_design import SteelBeam
-from eng_calcs.utils import str_to_float
+from monorail_beam.beam_design import SteelBeam
+from monorail_beam.utils import str_to_float
 
-import sys
 
 MODULE_PATH = Path(__file__)
 # print(f"{MODULE_PATH=}")
@@ -13,9 +12,6 @@ CWD = Path.cwd()
 DB_PATH = MODULE_PATH.parent
 # print(f"{DB_PATH=}")
 
-# Add the parent directory to sys.path
-sys.path.append(DB_PATH)
-
 
 def import_sections_db() -> pd.DataFrame:
     """
@@ -23,6 +19,7 @@ def import_sections_db() -> pd.DataFrame:
     and geometric properties.
     """
     df = pd.read_csv(DB_PATH / "steel_section_sizes_AU.csv")
+    # df = pd.read_csv(DB_PATH / "steel_section_sizes_AU.csv")
     df_cleaned = df.dropna()
     return df_cleaned
 
@@ -109,99 +106,3 @@ def create_steelbeam(
         resi_stress_cat=beam_prop['Class']
     )
     return sb
-
-
-
-
-# def create_solved_steelbeam_series(solved_sb: SteelBeam, dead_load: float, live_load: float) -> pd.Series:
-#     """
-#     Returns a Pandas Series using data from a solved 'SteelColumn' object in
-#     the following format:
-#         'Section Name'
-#         'Height'
-#         'Dead'
-#         'Live'
-#         'Factored Load'
-#         'Axial Resistance'
-#         'DCR (demand/capacity ratio)'
-    
-#     'sc': SteelColumn DataClass object
-#     'dead_load': Unfactored dead load applied to the column
-#     'live_load': Unfactored live load applied to the column
-#     """
-#     # Undertake the required calculations
-#     loads = {'G_load': str_to_float(dead_load), 'Q_load': str_to_float(live_load)}
-#     max_load = load_factors.max_factored_load(loads, load_factors.uls_load_combos())
-#     capacity = sc.factored_compressive_resistance()
-#     capacity_ratio = max_load / capacity
-
-#     # Compile the SteelColumn dictionary
-#     sc_dict = {
-#         'Section Name': sc.tag,
-#         'Height': sc.h,
-#         'Dead': dead_load,
-#         'Live': live_load,
-#         'Factored Load': max_load,
-#         # 'kf': sc.kf,
-#         'Axial Resistance': capacity,
-#         'DCR': capacity_ratio
-#     }
-#     sc_series = pd.Series(sc_dict)
-#     return sc_series
-
-
-# def create_sc_dataframe(
-#         df: pd.DataFrame, 
-#         col_height: float,
-#         yield_stress: float,
-#         kx: float,
-#         ky: float,
-#         dead_load: float,
-#         live_load: float,
-#         col_shape: str = 'Not Defined',
-#         fab_method: str = 'HR',
-#         e_mod: Optional[float] = 200000.0,
-#         # tag: Optional[str] = 'Column 1',
-#     ) -> pd.DataFrame:
-#     """
-#     Returns a DataFrame containing a series of solved 'SteelColumn' objects
-#     in the following format.
-#         'Section Name'
-#         'Height'
-#         'Dead'
-#         'Live'
-#         'Factored Load'
-#         'Axial Resistance'
-#         'DCR (demand/capacity ratio)'
-
-#     Parameters:    
-#     'df': Pandas DataFrame containing basic member geometric properties.
-#     'col_height': Column height.
-#     'yield_stress': Yield stress of the steel column.
-#     'kx': Effective length factor about the x-axis.
-#     'ky': Effective length factor about the y-axis.
-#     'e_mod': Elastic Modulus for steel; default is 200000 MPa.
-#     'tag': Optional column tag/name.
-#     """
-#     sub_df = df.copy().reset_index()
-
-#     acc = []
-#     for row in sub_df.index:
-#         col_series = sub_df.iloc[row].squeeze()
-
-#         sc = create_steelcolumn(
-#             col_series, 
-#             col_height=col_height,
-#             yield_stress=yield_stress,
-#             kx=kx,
-#             ky=ky,
-#             e_mod=e_mod,
-#             col_shape=col_shape,
-#             fab_method=fab_method
-#         )
-#         sc_series = create_sc_series(sc, dead_load=dead_load, live_load=live_load)
-#         acc.append(sc_series)
-
-#     sc_dataframe = pd.DataFrame(acc)
-
-#     return sc_dataframe
