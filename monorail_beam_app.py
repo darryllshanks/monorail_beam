@@ -29,7 +29,7 @@ with sb_expander_2:
 
 sb_expander_3 = st.sidebar.expander(label="Flange Wheel Loading")
 with sb_expander_3:
-    st.image("monorail_beam/images/wheel_flange_loading.png", width=100, )
+    st.image("images/wheel_flange_loading.png", width=100, )
     cf_bf = st.number_input("Ratio of $C_F / B_F$", value=0.9, min_value=0.0, max_value=1.0, step=0.01)
     wheel_load_dist = st.number_input("Maximum Static Wheel as Percentage of Total Load", value=45, min_value=0, max_value=50, step=1)
 
@@ -91,7 +91,7 @@ with tab0:
 
 # Setup and formatting of 'Monorail Geometry' tab
 with tab1:
-    st.image("monorail_beam/images/monorail_visual.png")
+    st.image("images/monorail_visual.png")
 
     col_1_1, col_1_2 = st.columns(2)
     with col_1_1:
