@@ -19,7 +19,6 @@ def import_sections_db() -> pd.DataFrame:
     and geometric properties.
     """
     df = pd.read_csv(DB_PATH / "steel_section_sizes_AU.csv")
-    # df = pd.read_csv(DB_PATH / "steel_section_sizes_AU.csv")
     df_cleaned = df.dropna()
     return df_cleaned
 

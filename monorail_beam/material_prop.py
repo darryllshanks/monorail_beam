@@ -1,6 +1,6 @@
 
 
-def plate_yield_stress(steel_grade: str, t: float, resi_stress_cat) -> float:
+def plate_yield_stress(steel_grade: str, t: float, resi_stress_cat: str) -> float:
     """
     Returns the steel plate element yield stress 'fy' based on the
     input 'steel grade' and plate thickness.
@@ -19,7 +19,6 @@ def plate_yield_stress(steel_grade: str, t: float, resi_stress_cat) -> float:
                 f_y = 250.0
             else:
                 f_y = 230.0
-            f_u_plate = 410.0
         elif steel_grade == '300':
             if t < 11.0:
                 f_y = 320.0
@@ -27,7 +26,6 @@ def plate_yield_stress(steel_grade: str, t: float, resi_stress_cat) -> float:
                 f_y = 300.0
             else:
                 f_y = 280.0
-            f_u_plate = 440.0
         elif steel_grade == '350':
             if t <= 11.0:
                 f_y = 360.0
@@ -35,7 +33,6 @@ def plate_yield_stress(steel_grade: str, t: float, resi_stress_cat) -> float:
                 f_y = 340.0
             else:
                 f_y = 330.0
-            f_u_plate = 480.0
     else:
         if steel_grade == '250':
             if t <= 8.0:
@@ -46,7 +43,6 @@ def plate_yield_stress(steel_grade: str, t: float, resi_stress_cat) -> float:
                 f_y = 250.0
             elif t <= 80.0:
                 f_y = 240.0
-            f_u_plate = 410.0
         elif steel_grade == '300':
             if t <= 8.0:
                 f_y = 320.0
@@ -58,7 +54,6 @@ def plate_yield_stress(steel_grade: str, t: float, resi_stress_cat) -> float:
                 f_y = 280.0
             elif t <= 80.0:
                 f_y = 270.0
-            f_u_plate = 410.0
         elif steel_grade == '400':
             if t <= 12.0:
                 f_y = 400.0
@@ -66,11 +61,10 @@ def plate_yield_stress(steel_grade: str, t: float, resi_stress_cat) -> float:
                 f_y = 380.0
             elif t <= 80.0:
                 f_y = 360.0
-            f_u_plate = 480.0
     return f_y
 
 
-def plate_tensile_stength(steel_grade: str, t: float, resi_stress_cat) -> float:
+def plate_tensile_strength(steel_grade: str, resi_stress_cat: str) -> float:
     """
     Returns the steel plate element tensile strength 'fu' based on the
     input 'steel grade' and plate thickness.

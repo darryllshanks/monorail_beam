@@ -238,7 +238,7 @@ def beam_capacity(app_inputs: dict, sb: sections_db.SteelBeam) -> dict:
                 t_f=sb.t_f,
                 t_w=sb.t_w,
                 n_w=1.0,
-                load_height='Shear Centre',
+                load_height=False,
                 pos_of_load="Within Segment",
                 lat_rot_restraint="None"
             )

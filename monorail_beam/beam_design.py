@@ -1,18 +1,9 @@
+from typing import Optional
 import pandas as pd
 from dataclasses import dataclass
 from math import pi, sqrt
-from pathlib import Path
-from monorail_beam.material_prop import plate_yield_stress, plate_tensile_stength
+from monorail_beam.material_prop import plate_yield_stress, plate_tensile_strength
 from monorail_beam.utils import str_to_float
-
-import sys
-
-MODULE_PATH = Path(__file__)
-CWD = Path.cwd()
-DB_PATH = MODULE_PATH.parent
-
-# Add the parent directory to sys.path
-sys.path.append(DB_PATH)
 
 
 @dataclass
@@ -98,7 +89,7 @@ class SteelBeam(Beam):
         AS 4100:2020(+A1) Table 2.1 with respect to the steel grade and 
         residual stress category.
         """
-        f_u = plate_tensile_stength(
+        f_u = plate_tensile_strength(
             self.steel_grade, 
             self.resi_stress_cat
         )
@@ -160,14 +151,24 @@ class SteelBeam(Beam):
 
 def element_slenderness(b: float, t:float, f_y: float) -> float:
     """
-    Returns the slenderness of a compression plate element of an I-Section
-    in accordance with AS 4100:2020(+A1) Clause 5.2.2.
+    Returns the slenderness of a compression plate element of an I-Section in 
+    accordance with AS 4100:2020(+A1) Clause 5.2.2.
 
-    'b': Clear width of the element outstand from the face of the
+    Parameters
+    ----------
+    b : float
+        Clear width of the element outstand from the face of the
         supporting plate element OR the clear width of the element
         between the faces of supporting plate elements.
-    't': Element thickness.
-    'f_y': Plate element yield stress (MPa).
+    t : float
+        Element thickness.
+    f_y : float
+        Plate element yield stress (MPa).
+
+    Returns
+    -------
+    float
+
     """
     lamb_e = b / t * (f_y / 250) ** 0.5
     print(f"lambda_e = {lamb_e}")
@@ -181,20 +182,35 @@ def section_slenderness(
         web_clear_depth: float,
         web_thickness: float,
         web_yield: float,
-        resi_stress_cat: str="HR",
-        axis: str="x"
+        resi_stress_cat: Optional[str]="HR",
+        axis: Optional[str]="x"
     ) -> tuple[float, float, float]:
     """
-    Returns the section slenderness of an I-Section in accordance with 
-    AS4100:2020(+A1) Clause 5.2.2.
+    Returns the section slenderness lambda parameters (lamb_s, lamb_sy, lamb_sp)
+    for an I-Section beam, calculated in accordance with AS 4100:2020(+A1) 
+    Clause 5.2.2.
 
-    'flange_outstand_width': Clear width of flange outstand from face of supporting plate/s
-    'flange_thickness': Flange thickness.
-    'flange_yield': Flange yield stress.
-    'web_clear_depth': Clear depth of web between flanges.
-    'web_thickness': Flange thickness.
-    'web_yield': Web yield stress.
-    'resi_stress_cat': Residual stress category of either 'HR', 'HW', or 'LW'.
+    Parameters
+    ----------
+    flange_outstand_width: float
+        Clear width of flange outstand from face of supporting plate/s
+    flange_thickness: float
+        Flange thickness.
+    flange_yield: float
+        Flange yield stress.
+    web_clear_depth: float
+        Clear depth of web between flanges.
+    web_thickness: float
+        Flange thickness.
+    web_yield: float
+        Web yield stress.
+    resi_stress_cat: str
+        Residual stress category of either 'HR', 'HW', or 'LW'.
+
+    Returns
+    -------
+    tuple(float, float, float)
+    
     """
     try:
         if resi_stress_cat == "HR":
@@ -254,13 +270,25 @@ def section_slenderness(
 def eff_section_modulus(S: float, Z: float, lamb_s: float, lamb_sy: float, lamb_sp: float) -> float:
     """
     Returns the effective section modulus of an I-Section in accordance with 
-    AS4100:2020(+A1) Clause 5.2.3 to 5.2.5.
+    AS 4100:2020(+A1) Clause 5.2.3 to 5.2.5.
 
-    'S': Plastic Section Modulus (mm**3)
-    'Z': Elastic Section Modulus (mm**3)
-    'lamb_s': Section slenderness
-    'lamb_sy': Section yield slenderness limit
-    'lamb_sp': Section plasticity slenderness limit
+    Parameters
+    ----------
+    S : float
+        Plastic section modulus
+    Z : float
+        Elastic section modulus
+    lamb_s : float
+        Section slenderness
+    lamb_sy : float
+        Section yield slenderness limit
+    lamb_sp : float
+        Section plasticity slenderness limit
+
+    Returns
+    -------
+    float
+
     """
     print(f"lambda_s = {lamb_s}, lambda_sp = {lamb_sp}, lambda_sy = {lamb_sy}")
     if lamb_s <= lamb_sp:
@@ -273,21 +301,31 @@ def eff_section_modulus(S: float, Z: float, lamb_s: float, lamb_sy: float, lamb_
     return Z_e
 
 
-def section_moment_cap(Z_e: float, f_y: float, phi: float=0.9) -> float:
+def section_moment_cap(Z_e: float, f_y: float, phi: Optional[float]=0.9) -> float:
     """
     Returns the factored nominal section moment capacity of a steel member,
-    calculated in accordance with AS4100:2020(+A1) Clause 5.2.1.
-    
-    'Z_e': Effective section modulus
-    'f_y': Yield stress of steel material
-    'phi': Material resistance factor
-    
-    This function does not assume units. The user is responsible for
+    calculated in accordance with AS 4100:2020(+A1) Clause 5.2.1.
+
+    Assumptions
+    -----------
+    - Uniaxial bending about a principal axis.
+    - This function does not assume units. The user is responsible for
     ensuring that consistent units are being used for the results to be
     valid.
-    
-    Assumptions:
-    - Uniaxial bending about a principal axis.
+
+    Parameters
+    ----------
+    Z_e : float
+        Effective section modulus
+    f_y : float
+        Yield stress of steel material
+    phi : Optional[float] = 0.9
+        Material resistance factor
+
+    Returns
+    -------
+    float
+
     """
     M_s = phi * Z_e * f_y
     return M_s
@@ -300,15 +338,48 @@ def bending_eff_length(
         t_f: float, 
         t_w: float, 
         n_w: float=1.0,
-        load_height: str="Top Flange",
-        pos_of_load: str="Within Segment",
-        lat_rot_restraint: str="None"
+        load_height: Optional[bool] = True,
+        pos_of_load: Optional[bool] = True,
+        lat_rot_restraint: Optional[str]="None"
 ) -> float:
     """
-    Returns the effective length 'le' of a segment or sub-segment of a 
-    steel member subject to bending moments about the major principal
-    x-axis. The k modification factors are determined in accordance with
-    AS4100:2020(+A1) Clause 5.6.3.
+    Returns the effective length 'le' of a segment or sub-segment of a steel member
+    subject to bending moments about the major principal x-axis. The k modification
+    factors are determined in accordance with AS 4100:2020(+A1) Clause 5.6.3.
+
+    Parameters
+    ----------
+    l_seg : float
+        Length of the beam segment or sub-segment
+    restraint_arrg : str
+        The restraint arrangement of the beam segment/sub-segment that matches the
+        restraint conditions at both ends of the beam. The input shall be one of
+        the following: ['FF', 'FP', 'FL', 'PP', 'PL', 'LL', 'FU', 'PU']
+    d_1 : float
+        Clear depth between flanges, ignoring fillets or welds
+    t_f : float
+        Thickness of critical flange
+    t_w : float
+        Thickness of web
+    n_w : Optional[float] = 1.0
+        Number of webs
+    load_height : Optional[bool] = True
+        Load height position of the applied load. A bool of True sets the load
+        height position to 'Top Flange', whilst False sets the position to the
+        'Shear Centre'
+    pos_of_load : Optional[bool] = True
+        Longitudinal position of the load. A bool of True sets the longitudinal
+        position to 'Within Segment', whilst False sets the position to 'At Segment
+        End'.
+    lat_rot_restraint : Optional[str] = 'None'
+        Defines the ends of a beam with lateral rotational restraints. Set to 'None'
+        by default, the input shall be one of the following: 
+        ['None', 'One', 'Both', 'Any']
+
+    Returns
+    -------
+    float
+
     """
     # Determines the twist restraint factor k_t
     if restraint_arrg == "FP" or restraint_arrg == "PL" or restraint_arrg == "PU":
@@ -318,9 +389,9 @@ def bending_eff_length(
     else: k_t = 1
 
     # Determines the load height factor k_l
-    if load_height == "Top Flange":
+    if load_height == True:
         if restraint_arrg == "FU" or restraint_arrg == "PU": k_l = 2.0
-        elif pos_of_load == "Within Segment": k_l = 1.4
+        elif pos_of_load == True: k_l = 1.4
         else: k_l = 1.0
     else: k_l = 1.0
 
@@ -337,8 +408,22 @@ def bending_eff_length(
 
 def moment_mod_factor(M_m: float, M_2: float, M_3: float, M_4: float)-> float:
     """
-    Returns the moment modification factor 'alpha_m' as calculated in
-    accordance with AS4100:2020(+A1) Clause 5.6.1.1 (iii).
+    Returns the moment modification factor 'alpha_m' calculated in accordance 
+    with AS4100:2020(+A1) Clause 5.6.1.1 (iii).
+
+    Parameters
+    ----------
+    M_m : float
+        Maximum deisng bending moment in the segment
+    M_2 and M_4 : float
+        Design bending moments at the quarter points of the segment
+    M_3 : float
+        Design bending moment at the midpoint of the segment
+
+    Returns
+    -------
+    float
+
     """
     alpha_m = min(1.7 * M_m / (M_2 ** 2 + M_3 **2 + M_4 **2), 2.5)
     return alpha_m
@@ -346,24 +431,42 @@ def moment_mod_factor(M_m: float, M_2: float, M_3: float, M_4: float)-> float:
 
 def member_moment_cap(M_sx: float, l_e: float, I_y: float, I_w: float, J: float, E: float, G: float, alpha_m: float=1.0, phi: float=0.9):
     """
-    Returns the factored nominal member moment capacity of a steel member,
-    calculated in accordance with AS4100:2020(+A1) Clause 5.6.1.1
-    
-    'M_sx': nominal section moment capacity about the major principal x-axis.
-        It is assumed that the value provided has not been factored by a
-        a material resistance factor.
-    'l_e': bending effective length for the segment under consideration.
-    'I_y': second moment of area about the minor principal y-axis.
-    'I_w': warping constant.
-    'J': torsion constant.
-    'E': modulus of elasticity.
-    'G': shear modulus of elasticity.
-    'alpha_m': moment modification factor.
-    'phi': material resistance factor.
-    
-    This function does not assume units. The user is responsible for
+    Returns the factored nominal member moment capacity of a steel member, 
+    calculated in accordance with AS4100:2020(+A1) Clause 5.6.1.1.
+
+    Assumptions
+    -----------
+    - It is assumed that the input nominal section moment capacity has not been 
+    factored by any material resistance factors.
+    - This function does not assume units. The user is responsible for
     ensuring that consistent units are being used for the results to be
     valid.
+
+    Parameters
+    ----------
+    'M_sx': float
+        Nominal section moment capacity about the major principal x-axis.
+    'l_e': float
+        Bending effective length for the segment under consideration.
+    'I_y': 
+        Second moment of area about the minor principal y-axis.
+    'I_w': float
+        Warping constant.
+    'J': float
+        Torsion constant.
+    'E': float
+        Modulus of elasticity.
+    'G': float
+        Shear modulus of elasticity.
+    'alpha_m': float
+        Moment modification factor.
+    'phi': Optional[float] = 0.9
+        Material resistance factor.
+
+    Returns
+    -------
+    float
+
     """
     M_o = sqrt(((pi ** 2 * E * I_y) / l_e ** 2) * (G * J + ((pi ** 2 * E * I_w) / l_e ** 2)))
     alpha_s = 0.6 * (sqrt((M_sx / M_o) ** 2 + 3) - M_sx / M_o)
