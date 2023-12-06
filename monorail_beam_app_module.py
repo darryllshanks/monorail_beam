@@ -233,13 +233,13 @@ def beam_capacity(app_inputs: dict, sb: sections_db.SteelBeam) -> dict:
         if length != 0:
             l_e = beam_design.bending_eff_length(
                 l_seg=length,
-                restraint_arrg=restraint,
                 d_1=sb.d - 2 * sb.t_f,
                 t_f=sb.t_f,
                 t_w=sb.t_w,
                 n_w=1.0,
+                rest_arrg=restraint,
                 load_height=False,
-                pos_of_load="Within Segment",
+                pos_of_load=True,
                 lat_rot_restraint="None"
             )
             alpha_m = 1.0

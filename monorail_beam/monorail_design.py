@@ -27,11 +27,16 @@ def hoisted_load_dyn_factor(HC_class: float, HD_class: float, v_hmax: float, v_h
     Calculates the hoisted load dynamic factor in accordance with
     AS 5221.1:2021 Clause 6.1.2.1.
 
-    'HC_class': the hoisting class per AS 5221.1:2021 Table 2a
-    'HD_class': the hoist drive class per AS 5221.1:2021 Clause 6.1.2.1.3.
-    'v_hmax': the maximum stead hoisting speed of the main hoist for load
-        combinations A1 and B1.
-    'v_hcs': the steady hoisting creep speed.
+    Args:
+        HC_class: the hoisting class per AS 5221.1:2021 Table 2a
+        HD_class: the hoist drive class per AS 5221.1:2021 Clause 6.1.2.1.3.
+        v_hmax: the maximum stead hoisting speed of the main hoist for load
+            combinations A1 and B1.
+        v_hcs: the steady hoisting creep speed.
+
+    Returns:
+        Hoisted load dynamic factor phi_2
+    
     """
     beta_2 = HOISTING_CLASS_FACTORS[HC_class]
     phi_2_min = PHI_2_MIN[HC_class][HD_class]
@@ -58,6 +63,15 @@ def load_combos(phi_1: float=1.1, phi_2: float=1.43) -> dict:
     1.43 is adopted. This is calculated using a maximum lifting speed of
     20 m/min and the maximum value of phi_2,min from AS 5221.1:2021 
     Table 2a.
+
+    Args:
+        phi_1: Dynamic factor for hoisting and gravity effects acting on the
+        mass of the crane.
+        phi_2: Dynamic factor for hoisting a grounded load.
+
+    Returns:
+        Dict of monorail dead and live load factors.
+
     """
     load_combos = {
         "SLS": {"G": 1.0, "Q": 1.0},
@@ -75,8 +89,15 @@ def factor_load(
     Returns the factored load based on individual input loads and 
     corresponding factors.
 
-    'xx_load' - Load for particular load case i.e. 'G_load' - Dead Load
-    'xx' - Corresponding load case factor i.e. 'G' - Dead Load Factor
+    Args:
+        G_load: Dead load
+        G: Dead load case factor
+        Q_load: Live load
+        Q: Live load case factor
+
+    Returns:
+        Factored load
+        
     """
     factored_load = G_load * G + Q_load * Q
     return factored_load
@@ -86,6 +107,18 @@ def factored_load(loads: dict, load_combos: dict) -> dict:
     """
     Returns the maximum factored load based on the parameters stored in
     the dictionaries 'loads' and 'load_combos'.
+
+    Args:
+        loads: Dict of unfactored loads of the same type and distribution
+            (e.g., point loads applied at the same distance on a beam,
+            uniformly distributed loads over the whole length of a beam).
+        load_combos: Dict of load combinations with factors to apply to typical
+            structural load cases. The load case keys shall match the keys used
+            in the 'loads' dict above.
+
+    Returns:
+        Maximum factored load
+
     """
     factored_loads = {}
     # print(loads)
@@ -108,6 +141,21 @@ def min_flg_thickness(
     """
     Returns the minimum flange thickness for a monorail beam per the
     equations provided in DR AS 1418:2023 Clause 5.12.3.1.
+
+    Args:
+        N_W: Maximum dynamic wheel load, in kN.
+        f_y: Yield stress of beam material, in MPa.
+        C_F: Distance between the vertical line of action of the wheel load and
+            the centreline of the beam web, in mm.
+        B_F: Distance between the centreline of the beam web and the outside
+            edge of the flange, in mm.
+        f_b: Longitudinal bending stress in the beam, in MPa (default=0.0).
+        K_L: Load position factor (default=1.3).
+        n_cycles: Design number of full load cycles (default=1000).
+
+    Returns:
+        Minimum required flange thickness, in mm.
+
     """
     if n_cycles < 1000:
         T_F = K_L * ((2400 * C_F / B_F + 600) * N_W / (f_y - 1.1 * f_b)) ** 0.5
@@ -126,6 +174,19 @@ def min_web_thickness(
     """
     Returns the minimum web thickness for a monorail beam per the
     equations provided in DR AS 1418:2023 Clause 5.12.3.1.
+
+    Args:
+        N_W: Maximum dynamic wheel load, in kN.
+        f_y: Yield stress of beam material, in MPa.
+        D: Depth of the beam section, in mm.
+        C_F: Distance between the vertical line of action of the wheel load and
+            the centreline of the beam web, in mm.
+        B_F: Distance between the centreline of the beam web and the outside
+            edge of the flange, in mm.
+
+    Returns:
+        Minimum required web thickness, in mm.
+
     """
     T_W = ((240 * C_F / B_F + 60) * D / (2 * B_F) * N_W / f_y) ** 0.5
     return T_W

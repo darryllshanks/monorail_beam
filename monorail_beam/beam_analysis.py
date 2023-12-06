@@ -8,6 +8,14 @@ def find_load_pos_for_PyCBA(load_pos: float, spans: list) -> int:
     """
     Returns the span index of a load position that is provided with
     respect to the total continuous beam length.
+
+    Args:
+        load_pos: 'x' distance of the applied point load on the beam.
+        spans: List containing the length of each span between supports.
+
+    Returns:
+        Span index
+
     """
     list_len = len(spans)
     rnd_load_pos = utils.round_down(load_pos, 4)
@@ -35,6 +43,33 @@ def static_beam_model(beam_model_data: dict, G_load: float, Q_load: float, Q_loa
     """
     Returns a dictionary of matrixes and critical values from a static
     analysis of a continuous beam element solved in PyCBA.
+
+    Args:
+        beam_model_data: A dict containing the relevant information required
+            by PyCBA to build an analysis model.
+        G_load: Dead load (kN)
+        Q_load: Live load (kN)
+        Q_load_pos: 'x' distance of the applied point load on the beam.
+        n_points: The number of evaluation points along a member for load 
+            effects.
+
+    Returns:
+        A dict of matrixes and critical values results. For example:
+        {
+            "Matrixes": {
+                "Deflections": np.array,
+                "Moment": np.array,
+                "Shear": np.array,
+                "x_dist": np.array
+            },
+            "Critical Values": {
+                "Deflections": [D_max, D_min],
+                "Moment": [M_max, M_min],
+                "Shear": [V_max, V_min],
+                "Reactions": [Reactions]
+            }
+        }
+
     """
     # Creates BeamAnalysis model
     L = beam_model_data['L']
@@ -85,6 +120,30 @@ def env_beam_model(beam_model_data: dict, G_load: float, Q_load: float, n_points
     """
     Returns a dictionary of matrixes and critical values from an enveloped
     moving load analysis for a continuous beam element solved in PyCBA.
+
+    Args:
+        beam_model_data: A dict containing the relevant information required
+            by PyCBA to build an analysis model.
+        G_load: Dead load (kN)
+        Q_load: Live load (kN)
+        n_points: The number of evaluation points along a member for load 
+            effects.
+
+    Returns:
+        A dict of matrixes and critical values results. For example:
+        {
+            "Matrixes": {
+                "Mmax": np.array,
+                "Mmin": np.array,
+                "Vmax": np.array,
+                "Vmin": np.array,
+                "x_dist": np.array
+            },
+            "Critical Values": {
+
+            }
+        }
+
     """
     # Creates BeamAnalysis model
     L = beam_model_data['L']
